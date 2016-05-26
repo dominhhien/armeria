@@ -1,0 +1,608 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Server basics &mdash; Armeria 0.99.3 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/logo.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Decorating a service" href="server-decorator.html" />
+    <link rel="prev" title="Writing a server" href="server.html" />
+  <meta name="google-site-verification" content="BFDmnYNF7ZdSsS6IqtaeQDT4c1tUqYjX543ZpLMnPjc" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.4.0/dist/interact.min.js"></script>
+  <script src="_static/center_page.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css">
+   
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/armeria.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.99
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up a project</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="server.html">Writing a server</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Server basics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ports">Ports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#services">Services</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#path-patterns">Path patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#per-service-configuration">Per service configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ssl-tls">SSL/TLS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#proxy-protocol">PROXY protocol</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#serving-http-and-https-on-the-same-port">Serving HTTP and HTTPS on the same port</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#virtual-hosts">Virtual hosts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-an-ip-address-of-a-client-who-initiated-a-request">Getting an IP address of a client who initiated a request</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="server-decorator.html">Decorating a service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-grpc.html">Running a gRPC service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-thrift.html">Running a Thrift service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-docservice.html">Browsing and invoking services with <code class="docutils literal notranslate"><span class="pre">DocService</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-annotated-service.html">Annotated services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-http-file.html">Serving static files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-servlet.html">Embedding a servlet container</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-access-log.html">Writing an access log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-cors.html">Configuring CORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server-sse.html">Serving Server-Sent Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client.html">Writing a client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced topics</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/releases">Release notes</a></li>
+<li class="toctree-l1"><a class="reference external" href="apidocs/index.html#://">API documentation</a></li>
+<li class="toctree-l1"><a class="reference external" href="xref/index.html#://">Source cross-reference</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://stackoverflow.com/questions/tagged/armeria">Questions and answers</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria">Fork me on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/line/armeria/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Armeria</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="server.html">Writing a server</a> &raquo;</li>
+        
+      <li>Server basics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/line/armeria/blob/master/site/src/sphinx/server-basics.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="server-basics">
+<span id="id1"></span><h1>Server basics<a class="headerlink" href="#server-basics" title="Permalink to this headline">¶</a></h1>
+<p>To start a server, you need to build it first. Use <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.ServerBuilder;
+
+ServerBuilder sb = Server.builder();
+// TODO: Configure your server here.
+Server server = sb.build();
+CompletableFuture&lt;Void&gt; future = server.start();
+// Wait until the server is ready.
+future.join();</pre></div>
+</div>
+<div class="section" id="ports">
+<h2>Ports<a class="headerlink" href="#ports" title="Permalink to this headline">¶</a></h2>
+<p>To serve anything, you need to specify which TCP/IP port you want to bind onto:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = Server.builder();
+// Configure an HTTP port.
+sb.http(8080);
+// TODO: Add your services here.
+Server server = sb.build();
+CompletableFuture&lt;Void&gt; future = server.start();
+future.join();</pre></div>
+</div>
+</div>
+<div class="section" id="services">
+<h2>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h2>
+<p>Even if we opened a port, it’s of no use if we didn’t bind any services to them. Let’s add some:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.MediaTypeNames;
+import com.linecorp.armeria.common.QueryParams;
+
+import com.linecorp.armeria.server.AbstractHttpService;
+import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.annotation.Consumes;
+import com.linecorp.armeria.server.annotation.Default;
+import com.linecorp.armeria.server.annotation.Get;
+import com.linecorp.armeria.server.annotation.Param;
+import com.linecorp.armeria.server.annotation.Post;
+import com.linecorp.armeria.server.annotation.Produces;
+import com.linecorp.armeria.server.logging.LoggingService;
+
+ServerBuilder sb = Server.builder();
+sb.http(8080);
+
+// Add a simple &#x27;Hello, world!&#x27; service.
+sb.service(&quot;/&quot;, (ctx, req) -&gt; HttpResponse.of(&quot;Hello, world!&quot;));
+
+// Using path variables:
+sb.service(&quot;/greet/{name}&quot;, new AbstractHttpService() {
+    @Override
+    protected HttpResponse doGet(ServiceRequestContext ctx, HttpRequest req) throws Exception {
+        String name = ctx.pathParam(&quot;name&quot;);
+        return HttpResponse.of(&quot;Hello, %s!&quot;, name);
+    }
+}.decorate(LoggingService.newDecorator())); // Enable logging
+
+// Using an annotated service object:
+sb.annotatedService(new Object() {
+    @Get(&quot;/greet2/:name&quot;) // `:name` style is also available
+    public HttpResponse greet(@Param(&quot;name&quot;) String name) {
+        return HttpResponse.of(&quot;Hello, %s!&quot;, name);
+    }
+});
+
+// Just in case your name contains a slash:
+sb.serviceUnder(&quot;/greet3&quot;, (ctx, req) -&gt; {
+    String path = ctx.mappedPath();  // Get the path without the prefix (&#x27;/greet3&#x27;)
+    String name = path.substring(1); // Strip the leading slash (&#x27;/&#x27;)
+    return HttpResponse.of(&quot;Hello, %s!&quot;, name);
+});
+
+// Using an annotated service object:
+sb.annotatedService(new Object() {
+    @Get(&quot;regex:^/greet4/(?&lt;name&gt;.*)$&quot;)
+    public HttpResponse greet(@Param(&quot;name&quot;) String name) {
+        return HttpResponse.of(&quot;Hello, %s!&quot;, name);
+    }
+});
+
+// Using a query parameter (e.g. /greet5?name=alice) on an annotated service object:
+sb.annotatedService(new Object() {
+    @Get(&quot;/greet5&quot;)
+    public HttpResponse greet(@Param(&quot;name&quot;) String name,
+                              @Param(&quot;title&quot;) @Default(&quot;Mr.&quot;) String title) {
+        // &quot;Mr.&quot; is used by default if there is no title parameter in the request.
+        return HttpResponse.of(&quot;Hello, %s %s!&quot;, title, name);
+    }
+});
+
+// Getting a map of query parameters on an annotated service object:
+sb.annotatedService(new Object() {
+    @Get(&quot;/greet6&quot;)
+    public HttpResponse greet(QueryParams params) {
+        return HttpResponse.of(&quot;Hello, %s!&quot;, params.get(&quot;name&quot;));
+    }
+});
+
+// Using media type negotiation:
+sb.annotatedService(new Object() {
+    @Get(&quot;/greet7&quot;)
+    @Produces(MediaTypeNames.JSON_UTF_8)
+    public HttpResponse greetGet(@Param(&quot;name&quot;) String name) {
+        return HttpResponse.of(HttpStatus.OK, MediaType.JSON_UTF_8, &quot;{\&quot;name\&quot;:\&quot;%s\&quot;}&quot;, name);
+    }
+
+    @Post(&quot;/greet7&quot;)
+    @Consumes(MediaTypeNames.FORM_DATA)
+    public HttpResponse greetPost(@Param(&quot;name&quot;) String name) {
+        return HttpResponse.of(HttpStatus.OK);
+    }
+});
+
+Server server = sb.build();
+CompletableFuture&lt;Void&gt; future = server.start();
+future.join();</pre></div>
+</div>
+<p>As described in the example, <code class="docutils literal notranslate"><span class="pre">service()</span></code> and <code class="docutils literal notranslate"><span class="pre">serviceUnder()</span></code> perform an exact match and a prefix match
+on a request path respectively. <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code> also provides advanced path mapping such as regex and
+glob pattern matching.</p>
+<p>Also, we decorated the second service using <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/logging/LoggingService.html">LoggingService</a></code>, which logs all requests and responses.
+You might be interested in decorating a service using other decorators, for example to gather metrics.</p>
+<p>You can also use an arbitrary object that’s annotated by the <code class="docutils literal notranslate"><span class="pre">&#64;Path</span></code> annotation using <code class="docutils literal notranslate"><span class="pre">annotatedService()</span></code>.</p>
+</div>
+<div class="section" id="path-patterns">
+<h2>Path patterns<a class="headerlink" href="#path-patterns" title="Permalink to this headline">¶</a></h2>
+<p>You can use the following path patterns to map an HTTP request path to a service or a decorator.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pattern</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Exact match</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/foo/bar</span></code> or <code class="docutils literal notranslate"><span class="pre">exact:/foo/bar</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Curly-brace style path variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/users/{userId}</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Colon style path variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/list/:productType/by/:ordering</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Prefix match</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">prefix:/files</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Glob pattern</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">glob:/*/downloads/**</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Regular expression</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">regex:^/files/(?&lt;filePath&gt;.\*)$</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="per-service-configuration">
+<h2>Per service configuration<a class="headerlink" href="#per-service-configuration" title="Permalink to this headline">¶</a></h2>
+<p>The examples above are just mapping the path of an HTTP request on a service. If you want to set configuration
+for a specific service, you can use fluent API:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = Server.builder();
+sb.route()                                   // Configure the service.
+  .post(&quot;/foo/bar&quot;)                          // Matched when the path is &quot;/foo/bar&quot; and the method is POST.
+  .consumes(MediaType.JSON)                  // Matched when the &quot;content-type&quot; header is &quot;application/json&quot;.
+  .produces(MediaType.JSON)                  // Matched when the &quot;accept&quot; headers is &quot;application/json&quot;.
+  .matchesHeaders(&quot;baz=qux&quot;)                 // Matched when the &quot;baz&quot; header is &quot;qux&quot;.
+  .matchesParams(&quot;quux=quuz&quot;)                // Matched when the &quot;quux&quot; parameter is &quot;quuz&quot;.
+  .requestTimeoutMillis(5000)
+  .maxRequestLength(8192)
+  .verboseResponses(true)
+  .build((ctx, req) -&gt; HttpResponse.of(OK)); // Should call to finish and return to the ServerBuilder.</pre></div>
+</div>
+<p>Or use a <code class="docutils literal notranslate"><span class="pre">Consumer</span></code>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.HttpMethod;
+
+ServerBuilder sb = Server.builder();
+sb.withRoute(builder -&gt; builder.path(&quot;/baz&quot;)         // Matched when the path is &quot;/baz&quot;.
+                               // Matched when the method is GET or POST.
+                               .methods(HttpMethod.GET, HttpMethod.POST)
+                               ...
+                               .build((ctx, req) -&gt; HttpResponse.of(OK)));</pre></div>
+</div>
+</div>
+<div class="section" id="ssl-tls">
+<h2>SSL/TLS<a class="headerlink" href="#ssl-tls" title="Permalink to this headline">¶</a></h2>
+<p>You can also add an HTTPS port with your certificate and its private key files:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = Server.builder();
+sb.https(8443)
+  .tls(new File(&quot;certificate.crt&quot;), new File(&quot;private.key&quot;), &quot;myPassphrase&quot;);
+...</pre></div>
+</div>
+</div>
+<div class="section" id="proxy-protocol">
+<h2>PROXY protocol<a class="headerlink" href="#proxy-protocol" title="Permalink to this headline">¶</a></h2>
+<p>Armeria supports both text (v1) and binary (v2) versions of <a class="reference external" href="https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt">PROXY protocol</a>.
+If your server is behind a load balancer such as <a class="reference external" href="https://www.haproxy.org/">HAProxy</a> and
+<a class="reference external" href="https://aws.amazon.com/elasticloadbalancing/">AWS ELB</a>, you could consider enabling the PROXY protocol:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import static com.linecorp.armeria.common.SessionProtocol.HTTP;
+import static com.linecorp.armeria.common.SessionProtocol.HTTPS;
+import static com.linecorp.armeria.common.SessionProtocol.PROXY;
+
+ServerBuilder sb = Server.builder();
+sb.port(8080, PROXY, HTTP);
+sb.port(8443, PROXY, HTTPS);
+...</pre></div>
+</div>
+</div>
+<div class="section" id="serving-http-and-https-on-the-same-port">
+<h2>Serving HTTP and HTTPS on the same port<a class="headerlink" href="#serving-http-and-https-on-the-same-port" title="Permalink to this headline">¶</a></h2>
+<p>For whatever reason, you may have to serve both HTTP and HTTPS on the same port. Armeria is one of the few
+implementations that supports port unification:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = Server.builder();
+sb.port(8888, HTTP, HTTPS);
+// Enable PROXY protocol, too.
+sb.port(9999, PROXY, HTTP, HTTPS);
+...</pre></div>
+</div>
+</div>
+<div class="section" id="virtual-hosts">
+<h2>Virtual hosts<a class="headerlink" href="#virtual-hosts" title="Permalink to this headline">¶</a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ServerBuilder.virtualHost(...)</span></code> to configure <a class="reference external" href="https://en.wikipedia.org/wiki/Virtual_hosting#Name-based">a name-based virtual host</a>:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">ServerBuilder sb = Server.builder();
+// Configure foo.com.
+sb.virtualHost(&quot;foo.com&quot;)
+  .service(...)
+  .tls(...)
+  .and() // Configure *.bar.com.
+  .virtualHost(&quot;*.bar.com&quot;)
+  .service(...)
+  .tls(...)
+  .and() // Configure the default virtual host.
+  .service(...)
+  .tls(...);
+...</pre></div>
+</div>
+</div>
+<div class="section" id="getting-an-ip-address-of-a-client-who-initiated-a-request">
+<span id="client-address"></span><h2>Getting an IP address of a client who initiated a request<a class="headerlink" href="#getting-an-ip-address-of-a-client-who-initiated-a-request" title="Permalink to this headline">¶</a></h2>
+<p>You may want to get an IP address of a client who initiated a request in your service. In that case,
+you can use the <code class="docutils literal notranslate"><span class="pre">clientAddress()</span></code> method of the <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServiceRequestContext.html">ServiceRequestContext</a></code>. But you need to configure
+your <code class="code api-reference docutils literal javadoc"><a class="code api-reference reference external javadoc" href="apidocs/com/linecorp/armeria/server/ServerBuilder.html">ServerBuilder</a></code> before doing that:</p>
+<div class="highlight-java notranslate"><div class="highlight hljs"><pre class="java">import com.linecorp.armeria.common.util.InetAddressPredicates;
+import com.linecorp.armeria.server.ClientAddressSource;
+
+ServerBuilder sb = Server.builder();
+
+// Configure a filter which evaluates whether an address of a remote endpoint is trusted.
+// If unspecified, no remote endpoint is trusted.
+// e.g. servers who have an IP address in 10.0.0.0/8.
+sb.clientAddressTrustedProxyFilter(InetAddressPredicates.ofCidr(&quot;10.0.0.0/8&quot;));
+
+// Configure a filter which evaluates whether an address can be used as a client address.
+// If unspecified, any address would be accepted.
+// e.g. public addresses
+sb.clientAddressFilter(address -&gt; !address.isSiteLocalAddress());
+
+// Configure a list of sources which are used to determine where to look for the client address,
+// in the order of preference. If unspecified, &#x27;Forwarded&#x27;, &#x27;X-Forwarded-For&#x27; and the source address
+// of a PROXY protocol header would be used.
+sb.clientAddressSources(ClientAddressSource.ofHeader(HttpHeaderNames.FORWARDED),
+                        ClientAddressSource.ofHeader(HttpHeaderNames.X_FORWARDED_FOR),
+                        ClientAddressSource.ofProxyProtocol());
+
+// Get an IP address of a client who initiated a request.
+sb.service(&quot;/&quot;, (ctx, res) -&gt;
+        HttpResponse.of(&quot;A request was initiated by %s!&quot;, ctx.clientAddress().getHostAddress()));</pre></div>
+</div>
+</div>
+<div class="section" id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="server-decorator.html#server-decorator"><span class="std std-ref">Decorating a service</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="server-decorator.html" class="btn btn-neutral float-right" title="Decorating a service" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="server.html" class="btn btn-neutral float-left" title="Writing a server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2020, LINE Corporation
+
+    </p>
+  </div>
+<div id="privacy_policy" role="contentinfo">
+  <p>
+    <a id="privacy_policy_text" href="https://terms.line.me/line_rules?lang=en">Privacy policy</a>
+  </p>
+</div>
+<script>
+  var contentInfoPara = document.querySelector("div[role=contentinfo] > p");
+  if (contentInfoPara && contentInfoPara.id !== 'privacy_policy') {
+    var privacyPolicyDiv = document.getElementById('privacy_policy');
+    var privacyPolicyText = document.getElementById('privacy_policy_text');
+    contentInfoPara.append(' | ');
+    contentInfoPara.append(privacyPolicyText);
+    privacyPolicyDiv.parentNode.removeChild(privacyPolicyDiv);
+  }
+</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-145425527-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+  
+  <a href="https://github.com/line/armeria" class="github-corner" aria-label="View source on GitHub">
+    <svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true">
+      <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z" fill="#3a3a3a"></path>
+      <path class="octo-arm" d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="#ffffff" style="transform-origin: 130px 106px;"></path>
+      <path class="octo-body" d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="#ffffff"></path>
+    </svg>
+  </a>
+  <script type="text/javascript" src="_static/add_badges.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/gradle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/thrift.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.7.0/highlightjs-line-numbers.min.js"></script>
+  <script>
+    document.querySelectorAll('div.hljs > pre').forEach(function(block) {
+      hljs.highlightBlock(block);
+      hljs.lineNumbersBlock(block);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js"></script>
+  <script>
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "rgba(58,58,58,0.75)",
+          "text": "#F8F8F8"
+        },
+        "button": {
+          "background": "transparent",
+          "text": "#F8F8F8",
+          "border": "#F8F8F8"
+        }
+      },
+      "content": {
+        "message": "This website uses anonymous cookies to ensure we provide you the best experience. ",
+        "link": "Opt out!",
+        "href": "https://tools.google.com/dlpage/gaoptout/",
+        "target": '_blank'
+      }
+    });
+  </script>
+   
+
+
+</body>
+</html>
